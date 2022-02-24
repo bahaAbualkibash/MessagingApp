@@ -1,5 +1,6 @@
 using MessagingApp.Extentions;
 using MessagingApp.Interfaces;
+using MessagingApp.Middleware;
 using MessagingApp.Models;
 using MessagingApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,8 +22,12 @@ builder.Services.AddCors();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
+    // app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -30,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-
+ 
 app.UseCors(x =>
 {
     x.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200");

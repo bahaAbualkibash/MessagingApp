@@ -16,7 +16,7 @@ namespace MessagingApp.Controllers
             _context = context;
         }
 
-        [Authorize]
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AppUser>>> getUsers()
         {
@@ -24,7 +24,6 @@ namespace MessagingApp.Controllers
             return Ok(users);
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<AppUser>> getUser(int id)
         {
