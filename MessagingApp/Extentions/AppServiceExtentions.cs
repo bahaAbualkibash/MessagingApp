@@ -1,5 +1,7 @@
-﻿using MessagingApp.Interfaces;
+﻿using MessagingApp.Helpers;
+using MessagingApp.Interfaces;
 using MessagingApp.Models;
+using MessagingApp.Repository;
 using MessagingApp.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +16,9 @@ namespace MessagingApp.Extentions
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-            return services;
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+           return services;
         }
     }
 }

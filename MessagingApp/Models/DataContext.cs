@@ -9,5 +9,6 @@ namespace MessagingApp.Models
         }
 
         public DbSet<AppUser> Users { get; set; }
+
     }
 }
