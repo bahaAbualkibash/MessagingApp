@@ -1,7 +1,6 @@
 ﻿using MessagingApp.Interfaces;
 using MessagingApp.Models;
 using MessagingApp.Models.DT0s;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -50,7 +49,9 @@ namespace MessagingApp.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto login)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == login.Username);
+            var user = await _context.Users
+                .Include(p => p.Photos)
+                .SingleOrDefaultAsync(x => x.UserName == login.Username);
             
             if (user == null) return Unauthorized("Invalid username/password");
             
@@ -66,7 +67,8 @@ namespace MessagingApp.Controllers
             return new UserDto()
             {
                 Token = _tokenService.CreateToken(user),
-                Username = user.UserName
+                Username = user.UserName,
+                photoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
             };
 
         }

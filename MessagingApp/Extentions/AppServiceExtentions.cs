@@ -11,6 +11,7 @@ namespace MessagingApp.Extentions
     {
         public static IServiceCollection AddAppServices(this IServiceCollection services, WebApplicationBuilder builder)
         {
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddDbContext<DataContext>(options =>
             {
@@ -18,6 +19,7 @@ namespace MessagingApp.Extentions
             });
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+            builder.Services.AddScoped<IPhotoService,PhotoSerivce>();
            return services;
         }
     }
