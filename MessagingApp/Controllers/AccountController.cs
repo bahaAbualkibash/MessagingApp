@@ -1,4 +1,5 @@
-﻿using MessagingApp.Interfaces;
+﻿using AutoMapper;
+using MessagingApp.Interfaces;
 using MessagingApp.Models;
 using MessagingApp.Models.DT0s;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,12 @@ namespace MessagingApp.Controllers
     {
         private DataContext _context;
         private ITokenService _tokenService;
-
-        public AccountController(DataContext context, ITokenService tokenService)
+        private IMapper _mapper;
+        public AccountController(DataContext context, ITokenService tokenService,IMapper mapper)
         {
             _context = context;
             _tokenService = tokenService;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -26,15 +28,13 @@ namespace MessagingApp.Controllers
 
             if(await UserExists(register.username))
                 return BadRequest("Username is taken");
-            
+            var user = _mapper.Map<AppUser>(register);
             using var hmac = new HMACSHA512();
-            
-            var user = new AppUser()
-            {
-                UserName = register.username.ToLower(),
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.password)),
-                PasswordSalt = hmac.Key
-            };
+
+
+            user.UserName = register.username.ToLower();
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.password));
+                user.PasswordSalt = hmac.Key;
             
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -42,7 +42,8 @@ namespace MessagingApp.Controllers
             return new UserDto()
             {
                 Token = _tokenService.CreateToken(user),
-                Username = user.UserName
+                Username = user.UserName,
+                KnownAs = user.KnownAs
             };
         }
 
@@ -68,7 +69,8 @@ namespace MessagingApp.Controllers
             {
                 Token = _tokenService.CreateToken(user),
                 Username = user.UserName,
-                photoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
+                photoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+                KnownAs  =user.KnownAs
             };
 
         }
