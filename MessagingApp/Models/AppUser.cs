@@ -1,4 +1,5 @@
 ﻿using MessagingApp.Extentions;
+using MessagingApp.Models.DT0s;
 
 namespace MessagingApp.Models
 {
@@ -19,10 +20,7 @@ namespace MessagingApp.Models
         public string City { get; set; }
         public ICollection<Photo> Photos { get; set; }
 
-
-        //public int GetAge()
-        //{
-        //    return DateOfBirth.CalculateAge();
-        //}
+        public ICollection<UserLike> LikedByUsers { get; set; }
+        public ICollection<UserLike> LikedUsers { get; set; }
     }
 }
