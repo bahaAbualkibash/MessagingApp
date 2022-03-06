@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using MessagingApp.Extentions;
+using MessagingApp.Helpers;
 using MessagingApp.Models;
 using MessagingApp.Models.DT0s;
 using Microsoft.EntityFrameworkCore;
@@ -26,11 +28,23 @@ namespace MessagingApp.Repository
                 .SingleOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<MemberDto>> GetMembersAsync()
+        public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
         {
-            return (IEnumerable<MemberDto>)await _context.Users
-                .ProjectTo<IEnumerable<MemberDto>>(_mapper.ConfigurationProvider).ToListAsync();
-          
+            var query = _context.Users.AsQueryable();
+            query = query.Where(u => u.UserName != userParams.CurrentUsername);
+
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(u => u.created),
+                _ => query.OrderByDescending(u => u.LastActive)
+            };
+
+            return await PagedList<MemberDto>.CreatAsync(
+                query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking(),
+                userParams.PageNumber,
+                userParams.PageSize);
+        
         }
         public async Task<AppUser> GetUserByIdAsync(int id)
         {

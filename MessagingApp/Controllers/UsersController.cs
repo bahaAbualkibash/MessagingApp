@@ -28,11 +28,13 @@ namespace MessagingApp.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> getUsers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> getUsers([FromQuery]UserParams userParams)
         {
-            var users = await _userRepo.GetUsersAsync();
-            var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
-            return Ok(usersToReturn);
+            userParams.CurrentUsername = User.GetUsername();
+            var users = await _userRepo.GetMembersAsync(userParams);
+
+            Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+            return Ok(users);
         }
 
         [HttpGet("{username}", Name = "GetUser")]

@@ -1,4 +1,6 @@
-﻿using MessagingApp.Models;
+﻿using MessagingApp.Extentions;
+using MessagingApp.Helpers;
+using MessagingApp.Models;
 using MessagingApp.Models.DT0s;
 
 namespace MessagingApp.Repository
@@ -10,7 +12,7 @@ namespace MessagingApp.Repository
         Task<IEnumerable<AppUser>> GetUsersAsync();
         Task<AppUser> GetUserByIdAsync(int id);
         Task<AppUser> GetUserByUsernameAsync(string name);
-        Task<IEnumerable<MemberDto>> GetMembersAsync();
+        Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
         Task<MemberDto> GetMemberAsync(string name);
     }
 }
