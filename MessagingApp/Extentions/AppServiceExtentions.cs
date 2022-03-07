@@ -17,6 +17,7 @@ namespace MessagingApp.Extentions
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<ILikeRepository, LikeRepository>();
             builder.Services.AddScoped<LogUserActivity>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
