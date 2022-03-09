@@ -1,14 +1,10 @@
-﻿using MessagingApp.Extentions;
-using MessagingApp.Models.DT0s;
+﻿using MessagingApp.Models.DT0s;
+using Microsoft.AspNetCore.Identity;
 
 namespace MessagingApp.Models
 {
-    public class AppUser
+    public class AppUser : IdentityUser<int>
     {
-        public int Id { get; set; }
-        public string UserName { get; set; }
-        public byte[] PasswordHash { get; set; } 
-        public byte[] PasswordSalt { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string KnownAs { get; set; }
         public DateTime created { get; set; } = DateTime.Now;
@@ -24,6 +20,7 @@ namespace MessagingApp.Models
         public ICollection<UserLike> LikedUsers { get; set; }
         public ICollection<Message> MessagesSent { get; set; }
         public ICollection<Message> MessagesRecived { get; set; }
+        public ICollection<AppUserRole> UserRoles { get; set; }
 
     }
 }

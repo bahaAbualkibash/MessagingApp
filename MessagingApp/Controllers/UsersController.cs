@@ -26,7 +26,6 @@ namespace MessagingApp.Controllers
             _photoService = photoService;
         }
 
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemberDto>>> getUsers([FromQuery]UserParams userParams)
         {

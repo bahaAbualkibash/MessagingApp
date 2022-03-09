@@ -15,7 +15,11 @@ namespace MessagingApp.Extentions
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddDbContext<DataContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),sqlServerOptionsAction: sqlOptions =>
+                {
+
+                    sqlOptions.EnableRetryOnFailure();
+                });
             });
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<ILikeRepository, LikeRepository>();

@@ -2,6 +2,7 @@
 using MessagingApp.Interfaces;
 using MessagingApp.Models;
 using MessagingApp.Models.DT0s;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -12,12 +13,14 @@ namespace MessagingApp.Controllers
 
     public class AccountController : BaseApiController
     {
-        private DataContext _context;
+        private readonly UserManager<AppUser> userManager;
+        private readonly SignInManager<AppUser> signInManager;
         private ITokenService _tokenService;
         private IMapper _mapper;
-        public AccountController(DataContext context, ITokenService tokenService,IMapper mapper)
+        public AccountController(UserManager<AppUser> userManager,SignInManager<AppUser> signInManager, ITokenService tokenService,IMapper mapper)
         {
-            _context = context;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
             _tokenService = tokenService;
             _mapper = mapper;
         }
@@ -29,19 +32,22 @@ namespace MessagingApp.Controllers
             if(await UserExists(register.username))
                 return BadRequest("Username is taken");
             var user = _mapper.Map<AppUser>(register);
-            using var hmac = new HMACSHA512();
 
 
             user.UserName = register.username.ToLower();
-            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.password));
-                user.PasswordSalt = hmac.Key;
-            
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+
+
+            var result = await userManager.CreateAsync(user, register.password);
+
+            if (!result.Succeeded) return BadRequest(result.Errors);
+
+            var roleResult = await userManager.AddToRoleAsync(user, "Member");
+
+            if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
 
             return new UserDto()
             {
-                Token = _tokenService.CreateToken(user),
+                Token = await _tokenService.CreateToken(user),
                 Username = user.UserName,
                 KnownAs = user.KnownAs
             };
@@ -50,24 +56,20 @@ namespace MessagingApp.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto login)
         {
-            var user = await _context.Users
+            var user = await userManager.Users
                 .Include(p => p.Photos)
-                .SingleOrDefaultAsync(x => x.UserName == login.Username);
+                .SingleOrDefaultAsync(x => x.UserName == login.Username.ToLower());
             
             if (user == null) return Unauthorized("Invalid username/password");
-            
-            using var hmac = new HMACSHA512(user.PasswordSalt);
 
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(login.Password));
+            var result = await signInManager.CheckPasswordSignInAsync(user,login.Password,false);
 
-            for(int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Inavlid username/password");
-            }
+            if(!result.Succeeded) return Unauthorized();
+
 
             return new UserDto()
             {
-                Token = _tokenService.CreateToken(user),
+                Token = await _tokenService.CreateToken(user),
                 Username = user.UserName,
                 photoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
                 KnownAs  =user.KnownAs
@@ -78,7 +80,7 @@ namespace MessagingApp.Controllers
 
         private async Task<bool> UserExists(string username)
         {
-            return await _context.Users.AnyAsync(x => x.UserName == username.ToLower()); ;
+            return await userManager.Users.AnyAsync(x => x.UserName == username.ToLower()); ;
         }
     }
 }
